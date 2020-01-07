@@ -1,0 +1,50 @@
+package ${packageName}.${businessName}.mapper;
+
+import com.ruoyi.common.utils.PageData;
+import java.util.List;
+
+/**
+ * ${functionName}Mapper接口
+ * 
+ * @author ${author}
+ * @date ${datetime}
+ */
+public interface ${ClassName}Mapper 
+{
+    /**
+     * 查询${functionName}
+     * 
+     * @param ${pkColumn.javaField} ${functionName}ID
+     * @return ${functionName}
+     */
+    public PageData selectById(String ${pkColumn.columnName});
+
+    /**
+     * 查询${functionName}列表
+     * 
+     * @return ${functionName}集合
+     */
+    public List<PageData> selectList(PageData pd);
+
+    /**
+     * 新增${functionName}
+     * 
+     * @return 结果
+     */
+   public int addSave(PageData pd);
+
+    /**
+     * 修改${functionName}
+     * 
+     * @param ${className} ${functionName}
+     * @return 结果
+     */
+   public int editSave(PageData pd);
+
+    /**
+     * 批量删除${functionName}
+     * 
+     * @return 结果
+     */
+    public int deleteByIds(String[] ids);
+}

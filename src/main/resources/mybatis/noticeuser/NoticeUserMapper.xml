@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.noticeuser.mapper.NoticeUserMapper">
+	
+	<select id="getInfoList" parameterType="pd" resultType="pd">
+		select a.id, a.title,a.detail, a.record_date, b.user_name
+		  from t_noticeuser_info a left join sys_user b
+		    on a.user_id = b.login_name
+		 where a.status = 1
+		 <if test="title != null and title != ''">
+		 	and a.title like concat('%', #{title}, '%')
+		 </if>
+		 order by record_date desc
+	</select>
+	<insert id="addSave" parameterType="pd">
+		insert into t_noticeuser_info 
+		   (title, 
+		   detail, 
+		   status, 
+		   user_id,		   
+		   record_id, 
+		   record_date)
+		values
+		<foreach collection="loginArray" item="loginName" separator=",">
+			(#{title}, 
+		   #{detail}, 
+		   #{status},
+		   #{loginName},
+		   #{record_id}, 
+		   sysdate())
+		</foreach>
+		   
+	</insert>
+	
+	<!-- <select id="getInfo" parameterType="pd" resultType="pd">
+		select a.id, a.title, a.detail
+		  from t_notice_info a
+		 where id = #{id}
+	</select>
+	
+	<update id="editSave" parameterType="pd">
+		update t_notice_info 
+		   set title = #{title},
+		   	   detail = #{detail}
+		 where id = #{id}
+	</update> -->
+	
+	<update id="removeByIds" parameterType="string">
+		update t_noticeuser_info set status = 0
+		 where id in
+		 <foreach item="id" collection="array" open="(" separator="," close=")">
+		 	#{id}
+		 </foreach>
+	</update>
+	
+	<select id="getUserSelectList" resultType="pd">
+		select a.login_name, a.user_name, b.dept_name, a.phonenumber
+		  from sys_user a, sys_dept b
+		 where a.dept_id = b.dept_id
+		   and a.status = 0
+		   and a.del_flag = 0
+		   and b.status = 0
+		  order by b.parent_id, b.dept_id
+	</select>
+	
+	<select id="findRegistrationIds" parameterType="pd" resultType="pd">
+		select registration_id registrationId from sys_user 
+		 where login_name in 
+		 <foreach item="loginName" collection="loginArray" open="(" separator="," close=")">
+		 	#{loginName}
+		 </foreach>
+	</select>
+</mapper>

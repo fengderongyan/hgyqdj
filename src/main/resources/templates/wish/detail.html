@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('修改')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-edit" th:object="${info}">
+        	<input type="hidden" name="id" th:value="*{id}">
+        	<h4 class="form-header h4">基础信息</h4>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">标题：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" name="title" th:value="*{title}" readonly="readonly" required/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">详情描述：</label>
+	            <div class="col-sm-10">
+					<textarea rows="4" cols="4" style="width: 100%" name="content" required readonly="readonly">[[${info.content}]]</textarea>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">联系人：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" name="lxr_name" th:value="*{lxr_name}" required readonly="readonly"/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">联系电话：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" name="lxr_phone" th:value="*{lxr_phone}" required readonly="readonly"/>
+	            </div>
+	        </div>
+	        <h4 class="form-header h4">认领信息</h4>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">认领人：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" name="user_name" th:value="*{user_name}" readonly="readonly"/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">认领时间：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" name="claim_date" th:value="*{claim_date}" readonly="readonly"/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">所属组织：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" name="dept_name" th:value="*{dept_name}" readonly="readonly"/>
+	            </div>
+	        </div>
+    	</form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: layui-js-css" />
+
+</body>
+</html>

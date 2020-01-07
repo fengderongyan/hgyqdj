@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('修改题目')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-config-edit" th:object="${question}">
+            <input id="id" name="id" th:value="*{id}"  type="hidden">
+            <div class="form-group">	
+	            <label class="col-sm-3 control-label">类型：</label>
+	            <div class="col-sm-8">
+	                <select name="type" class="form-control m-b" th:with="type=${@dict.getType('t_question_type')}" required>
+						<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"
+							th:selected="${question.type + '' eq dict.dictValue}"></option>
+					</select>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-3 control-label">题型：</label>
+	            <div class="col-sm-8">
+	                <select id="qst_type" name="qst_type" class="form-control m-b" required>
+						<option value="1" th:selected="${question.qst_type == 1}">单选</option>
+						<option value="2" th:selected="${question.qst_type == 2}">多选</option>
+						<option value="3" th:selected="${question.qst_type == 3}">判断</option>
+					</select>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-3 control-label">题干：</label>
+	            <div class="col-sm-8">
+	                <textarea rows="3" cols="3" style="width: 100%" name="qst_content" required>[[${question.qst_content}]]</textarea>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-3 control-label">答案：</label>
+	            <div class="col-sm-8">
+	            	<input class="form-control" type="text" id="answer" name="answer" th:value="*{answer}" required/><span class="help-block m-b-none">若多选请填如ABC</span>
+	            </div>
+	        </div>
+	        <div class="form-group">
+				<label class="col-sm-3 control-label">选项A：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionA" required>[[${question.optionA}]]</textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">选项B：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionB" required>[[${question.optionB}]]</textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">选项C：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionC">[[${question.optionC}]]</textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">选项D：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionD">[[${question.optionD}]]</textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">选项E：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionE">[[${question.optionE}]]</textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">选项F：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionF">[[${question.optionF}]]</textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">选项G：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionG">[[${question.optionG}]]</textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">选项H：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionH">[[${question.optionH}]]</textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">选项I：</label>
+				<div class="col-sm-8">
+				    <textarea rows="2" cols="2" style="width: 100%" name="optionI">[[${question.optionI}]]</textarea>
+				</div>
+			</div>
+    	</form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script type="text/javascript">
+	    $("#form-config-edit").validate({
+	    	onkeyup: false,
+	        focusCleanup: true
+	    });
+	    
+	    function submitHandler() {
+	        if ($.validate.form()) {
+	        	var qst_type = $('#qst_type').val();
+		    	var answer = $('#answer').val();
+		    	if(qst_type == 1 && answer.length > 1){//单选
+		    		alert("单选题最多选择一个答案");
+		    		return false;
+		    	}else if(qst_type == 2 && answer.length < 2){//多选题
+		    		alert("多选题最少选择两个答案");
+		    		return false;
+		    	}else if(qst_type == 3 && answer != 'A' && answer != 'B'){//判断
+		    		alert("判断题只能选择A或B");
+		    		return false;
+		    	}
+		    	var answerChars = answer.split("");
+				for(var i = 0; i < answerChars.length; i++){
+	      			if("ABCDEFGHI".indexOf(answerChars[i]) == -1){
+	      				alert("答案输入格式不正确");
+	      				return false;
+	      			}
+	      		}
+	            $.operate.save(ctx + "questionmanage/question/editSave", $('#form-config-edit').serialize());
+	        }
+	    }
+    </script>
+</body>
+</html>

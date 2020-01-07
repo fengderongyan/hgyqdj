@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.noticeinfo.mapper.NoticeInfoMapper">
+	
+	<select id="getInfoList" parameterType="pd" resultType="pd">
+		select a.id, a.title,a.detail, a.record_date
+		  from t_notice_info a
+		 where a.status = 1
+		 <if test="title != null and title != ''">
+		 	and a.title like concat('%', #{title}, '%')
+		 </if>
+		 order by record_date desc
+	</select>
+	<insert id="addSave" parameterType="pd">
+		insert into t_notice_info 
+		   (title, 
+		   detail, 
+		   status, 
+		   record_id, 
+		   record_date)
+		values
+		   (#{title}, 
+		   #{detail}, 
+		   #{status}, 
+		   #{record_id}, 
+		   sysdate())
+	</insert>
+	
+	<select id="getInfo" parameterType="pd" resultType="pd">
+		select a.id, a.title, a.detail
+		  from t_notice_info a
+		 where id = #{id}
+	</select>
+	
+	<update id="editSave" parameterType="pd">
+		update t_notice_info 
+		   set title = #{title},
+		   	   detail = #{detail}
+		 where id = #{id}
+	</update>
+	
+	<update id="removeByIds" parameterType="string">
+		update t_notice_info set status = 0
+		 where id in
+		 <foreach item="id" collection="array" open="(" separator="," close=")">
+		 	#{id}
+		 </foreach>
+	</update>
+</mapper>

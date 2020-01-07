@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.wish.mapper.WishMapper">
+	
+	<select id="getInfoList" parameterType="pd" resultType="pd">
+		select a.id, a.title, a.title_img_url, a.record_date, case a.status when 1 then '进行中' when 2 then '已认领' when 3 then '已结束' end status_name
+		  from t_wish a
+		 where a.status != 0
+		 <if test="title != null and title != ''">
+		 	and a.title like concat('%', #{title}, '%')
+		 </if>
+		 <if test="status != null and status != ''">
+		 	and a.status = #{status}
+		 </if>
+		 order by record_date desc
+	</select>
+	<insert id="addSave" parameterType="pd">
+		insert into t_wish 
+		   (title, 
+		   title_img_url, 
+		   content, 
+		   status, 
+		   lxr_name,
+		   lxr_phone,
+		   record_id, 
+		   record_date)
+		values
+		   (#{title}, 
+		   #{title_img_url}, 
+		   #{content}, 
+		   #{status}, 
+		   #{lxr_name},
+		   #{lxr_phone},
+		   #{record_id}, 
+		   sysdate())
+	</insert>
+	
+	<select id="getInfo" parameterType="pd" resultType="pd">
+		select a.id, a.title, a.title_img_url, a.content, a.lxr_name, a.lxr_phone, a.claim_id, DATE_FORMAT(a.claim_date,'%Y-%m-%d %H:%i:%s') claim_date,
+			   b.user_name, b.phonenumber,(select dept_name from sys_dept c where b.dept_id = c.dept_id) dept_name
+		  from t_wish a left join sys_user b 
+		    on a.claim_id = b.login_name
+		 where id = #{id}
+	</select>
+	
+	<update id="editSave" parameterType="pd">
+		update t_wish 
+		   set title = #{title},
+		   	   title_img_url = #{title_img_url},
+		   	   content = #{content},
+		   	   lxr_name = #{lxr_name},
+		   	   lxr_phone = #{lxr_phone},
+		   	   record_id = #{record_id},
+		   	   record_date = sysdate()
+		 where id = #{id}
+	</update>
+	
+	<update id="removeByIds" parameterType="string">
+		update t_wish set status = 0
+		 where id in
+		 <foreach item="id" collection="array" open="(" separator="," close=")">
+		 	#{id}
+		 </foreach>
+	</update>
+	<update id="finishWish" parameterType="pd">
+		update t_wish set status = 3, finish_date = sysdate() where id = #{id}
+	</update>
+</mapper>

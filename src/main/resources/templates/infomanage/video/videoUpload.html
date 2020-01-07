@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('上传视频')" />
+</head>
+<body>
+<br>
+<form name=theform>
+</form>
+<h4>您所选择的文件：</h4>
+<div id="ossfile">你的浏览器不支持flash,Silverlight或者HTML5！</div>
+
+<br/>
+
+<div id="container">
+	<a id="selectfiles" href="javascript:void(0);" class='btn'>选择视频</a>
+	<a id="postfiles" href="javascript:void(0);" class='btn'>开始上传</a>
+</div>
+
+<pre id="console"></pre>
+
+</body>
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:src="@{/oss-h5-upload-js-direct/lib/crypto1/crypto/crypto.js}"></script>
+<script type="text/javascript" th:src="@{/oss-h5-upload-js-direct/lib/crypto1/hmac/hmac.js}"></script>
+<script type="text/javascript" th:src="@{/oss-h5-upload-js-direct/lib/crypto1/sha1/sha1.js}"></script>
+<script type="text/javascript" th:src="@{/oss-h5-upload-js-direct/lib/base64.js}"></script>
+<script type="text/javascript" th:src="@{/oss-h5-upload-js-direct/lib/plupload-2.1.2/js/plupload.full.min.js}"></script>
+<script type="text/javascript" th:src="@{/oss-h5-upload-js-direct/upload.js}"></script>
+<script>
+	function zTreeOnClick(path) {
+	    $("#video_url", parent.document).val(path);
+	    $("#videoSrc", parent.document).attr("src", path);
+        $.modal.close();
+	};
+	
+</script>
+
+</html>
+
+

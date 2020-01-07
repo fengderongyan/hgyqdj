@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${packageName}.${businessName}.mapper.${ClassName}Mapper">
+	
+	<select id="selectList" parameterType="pd" resultType="pd">
+		select #foreach($column in $columns) $column.columnName#if($velocityCount != $columns.size()),#end#end from ${tableName}
+		<where>
+#foreach($column in $columns)
+#set($queryType=$column.queryType)
+#set($javaField=$column.javaField)
+#set($javaType=$column.javaType)
+#set($columnName=$column.columnName)
+#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+#if($column.query)
+#if($column.queryType == "EQ")
+            <if test="$columnName != null and $columnName.trim() != ''"> and $columnName = #{$columnName}</if>
+#elseif($queryType == "NE")
+            <if test="$columnName != null and $columnName.trim() != ''"> and $columnName != #{$columnName}</if>
+#elseif($queryType == "GT")
+            <if test="$columnName != null and $columnName.trim() != ''"> and $columnName &gt; #{$columnName}</if>
+#elseif($queryType == "GTE")
+            <if test="$columnName != null and $columnName.trim() != ''"> and $columnName &gt;= #{$columnName}</if>
+#elseif($queryType == "LT")
+            <if test="$columnName != null and $columnName.trim() != ''"> and $columnName &lt; #{$columnName}</if>
+#elseif($queryType == "LTE")
+            <if test="$columnName != null and $columnName.trim() != ''"> and $columnName &lt;= #{$columnName}</if>
+#elseif($queryType == "LIKE")
+            <if test="$columnName != null and $columnName.trim() != ''"> and $columnName like concat('%', #{$columnName}, '%')</if>
+#end
+#end
+#end			
+		</where>
+	</select>
+	
+	<select id="selectById" parameterType="string" resultType="pd">
+		select #foreach($column in $columns) $column.columnName#if($velocityCount != $columns.size()),#end#end from ${tableName} 
+		 where ${pkColumn.columnName} = #{${pkColumn.columnName}}
+	</select>
+	
+	<insert id="addSave" parameterType="pd">
+		insert into ${tableName}
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+#foreach($column in $columns)
+#if($column.columnName != $pkColumn.columnName || !$pkColumn.increment)
+            $column.columnName,
+#end
+#end
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+#foreach($column in $columns)
+#if($column.columnName != $pkColumn.columnName || !$pkColumn.increment)
+            #{$column.columnName},
+#end
+#end
+        </trim>
+	</insert>
+	
+	<update id="editSave" parameterType="pd">
+		update ${tableName}
+		<trim prefix="SET" suffixOverrides=",">
+#foreach($column in $columns)
+#if($column.columnName != $pkColumn.columnName || !$pkColumn.increment)
+       	 	$column.columnName = #{$column.columnName},
+#end
+#end		
+		</trim> 
+		where ${pkColumn.columnName} = #{${pkColumn.columnName}}
+
+	</update>
+	
+	<delete id="deleteByIds" parameterType="pd">
+		delete from ${tableName}
+		where ${pkColumn.columnName} in
+		<foreach item="item" collection="array" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>
+	
+    
+</mapper>

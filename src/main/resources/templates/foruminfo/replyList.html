@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('党员论坛回答')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <p>回答：</p>
+                                <input type="text" name="reply_content"/>
+                            </li>
+                            <li>
+                            	<input type="hidden" name="forum_id" th:value="${param.id}"/>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <a class="btn btn-danger multiple disabled" onclick="$.operate.removeAll()" shiro:hasPermission="project:foruminfo:remove">
+                    <i class="fa fa-remove"></i> 删除
+                </a>
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table" data-mobile-responsive="true"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('project:foruminfo:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('project:foruminfo:remove')}]];
+        var prefix = ctx + "foruminfo";
+
+        $(function() {
+            var options = {
+            	showToggle:false,
+            	showSearch:false,
+            	uniqueId:'id',//批量删除指定ID
+                url: prefix + "/getReplyList",
+                removeUrl: prefix + "/replyRemove",
+                modalName: "论坛回答",
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field : 'id', 
+                    title : 'ID',
+                    visible: false
+                },
+                {
+                    field: 'reply_content',
+                    title: '回答内容',
+                    formatter: function(value, row, index) {
+                    	return $.table.tooltip(value);
+                    }
+                },
+                {
+                    field: 'record_name',
+                    title: '回答人',
+                    align: 'center'
+                },
+                {
+                    field : 'record_date', 
+                    align: 'center',
+                    title : '回答时间'
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

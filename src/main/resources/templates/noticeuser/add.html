@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('关于我们')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-add" name="form-add">
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">标题：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" name="title" required/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">接收人：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" id="userNames" name="userNames" required readonly="readonly" onclick="userSelect()"/>
+		        	<input class="form-control" type="hidden" id="loginNames" name="loginNames"/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">通知详情：</label>
+	            <div class="col-sm-10">
+	            	<textarea rows="10" required name="detail" style="width: 100%;"></textarea>
+	            </div>
+	        </div>
+    	</form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script type="text/javascript">
+	    $("#form-add").validate({
+	    	onkeyup: false,
+	        focusCleanup: true
+	    });
+	    function submitHandler() {
+	        if ($.validate.form()) {
+	            $.operate.save(ctx + "noticeuser/addSave", $('#form-add').serialize());
+	        }
+	    }
+	    function userSelect(){
+	    	$.modal.open("选择接收人", ctx + "noticeuser/userSelect");
+	    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.deptactivity.mapper.DeptActivityMapper">
+	
+	<select id="getOrgList" resultType="pd">
+		select dept_id, dept_name from sys_dept where status = 0 and del_flag = 0 and dept_id != 100 order by parent_id, dept_id
+	</select>
+	
+	<select id="getInfoList" parameterType="pd" resultType="pd">
+		select a.id, a.title, a.title_img_url, b.dept_name, a.record_date
+		  from t_dept_activity a, sys_dept b
+		 where a.dept_id = b.dept_id
+		   and b.status = 0
+		   and a.status = 1
+		 <if test="dept_id != null and dept_id != ''">
+		 	and a.dept_id = #{dept_id}
+		 </if>
+		 <if test="title != null and title != ''">
+		 	and a.title like concat('%', #{title}, '%')
+		 </if>
+		 order by record_date desc
+	</select>
+	<insert id="addSave" parameterType="pd">
+		insert into t_dept_activity 
+		   (title, 
+		   title_img_url, 
+		   detail, 
+		   dept_id, 
+		   status, 
+		   record_id, 
+		   record_date)
+		values
+		   (#{title}, 
+		   #{title_img_url}, 
+		   #{detail}, 
+		   #{dept_id}, 
+		   #{status}, 
+		   #{record_id}, 
+		   sysdate())
+	</insert>
+	
+	<select id="getInfo" parameterType="pd" resultType="pd">
+		select a.id, a.title, a.title_img_url, a.dept_id, a.detail
+		  from t_dept_activity a
+		 where id = #{id}
+	</select>
+	
+	<update id="editSave" parameterType="pd">
+		update t_dept_activity 
+		   set title = #{title},
+		   	   title_img_url = #{title_img_url},
+		   	   dept_id = #{dept_id},
+		   	   detail = #{detail}
+		 where id = #{id}
+	</update>
+	
+	<update id="removeByIds" parameterType="string">
+		update t_dept_activity set status = 0
+		 where id in
+		 <foreach item="id" collection="array" open="(" separator="," close=")">
+		 	#{id}
+		 </foreach>
+	</update>
+</mapper>

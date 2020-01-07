@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('新增')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-add" name="form-add">
+        <input type="hidden" name="class_id" value="5">
+        <input type="hidden" name="item_id" value="14">
+        <div class="form-group">	
+            <label class="col-sm-2 control-label">标题：</label>
+            <div class="col-sm-10">
+	        	<input class="form-control" type="text" name="title" required/>
+            </div>
+        </div>
+        <div class="form-group">	
+            <label class="col-sm-2 control-label">封面上传：</label>
+            <div class="col-sm-10">
+	        	<input name="title_img_url" id="title_img_url" class="form-control" type="hidden" >
+                <button type="button" class="btn btn-primary" id="imgBtn">上传封面</button>
+                <img id="img" height="70px">
+            </div>
+        </div>
+        <div class="form-group">	
+            <label class="col-sm-2 control-label">上传视频(只允许上传mp4格式 )：</label>
+            <div class="col-sm-10">
+            	<button type="button" class="btn btn-primary" id="videoBtn" >上传视频</button>
+            	<div style="max-height: 300px;max-width: 200px;">
+	            	<video id="videoSrc" controls="controls" oncanplaythrough="myFunction(this)">
+	            	</video>
+            	</div>
+           </div>
+        </div>
+      	<div class="form-group">	
+            <label class="col-sm-2 control-label">视频地址：</label>
+            <div class="col-sm-10">
+            	<input type="hidden" id="video_time" name="video_time" />
+            	<input class="form-control" type="text" id="video_url" name="video_url" value="" required/>
+            </div>
+        </div>
+        <div class="form-group">	
+            <label class="col-sm-2 control-label">视频简介：</label>
+            <div class="col-sm-10">
+            	<textarea rows="3" cols="3" style="width: 100%" name="detail"></textarea>
+            </div>
+        </div>
+    </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: layui-js-css" />
+    <script type="text/javascript">
+	    $("#form-add").validate({
+	    	onkeyup: false,
+	        focusCleanup: true
+	    });
+	    layui.use('upload', function(){
+        	var upload = layui.upload;
+        	upload.render({
+			    elem: '#imgBtn'
+			    ,url: ctx + "common/upload"
+			    ,size: 10000
+			    ,accept: 'images'
+			    ,acceptMime:'image/*'
+			    ,before: function(){$.modal.loading("上传中")}
+			    ,done: function(res){
+			      if(res.code == 0){//如果上传成功
+			        $.modal.closeLoading();
+			    	$('#img').attr('src', res.url);
+			      	$('#title_img_url').val(res.url);
+			      }else{ //如果上传失败
+			      	$.modal.closeLoading();
+			      	$.modal.alertWarning("图片上传失败。");
+			      }
+			    }
+			    ,error:function(){
+			    	$.modal.closeLoading();
+			    	$.modal.alertWarning("图片上传失败。");
+			    }
+			});
+			upload.render({
+			    elem: '#videoBtn'
+			    ,url: ctx + "common/upload"
+			    ,accept: 'video'
+			    ,acceptMime:'video/mp4'
+			    ,before: function(){$.modal.loading("上传中")}
+			    ,done: function(res){
+			      if(res.code == 0){//如果上传成功
+			        $.modal.closeLoading();
+			        $("#video_url").val(res.url);
+	    			$("#videoSrc").attr("src", res.url);
+			      }else{ //如果上传失败
+			      	$.modal.closeLoading();
+			      	$.modal.alertWarning("视频上传失败。");
+			      }
+			    }
+			    ,error:function(){
+			    	$.modal.closeLoading();
+			    	$.modal.alertWarning("视频上传失败。");
+			    }
+			});
+        });
+        
+	    /* function videoUp(){
+    		 var title = '视频上传';
+    		 var url = ctx + 'infomanage/videoUpload';
+    		 $.modal.openDetail("上传视频", url, '500', '300');
+		} */
+		
+		function myFunction(ele) {
+			var video_time = ele.duration;
+			$('#video_time').val(Math.round(video_time));
+		}
+		
+	    function submitHandler() {
+	        if ($.validate.form()) {
+				var title_img_url = $('#title_img_url').val();
+				if($.common.isEmpty(title_img_url)){
+					alert('请上传封面');
+					return false;
+				}
+				var video_url = $('#video_url').val();
+				if($.common.isEmpty(video_url)){
+					alert('请上传视频或填写视频链接！');
+					return false;
+				}
+	            $.operate.save(ctx + "infomanage/videoAddSave", $('#form-add').serialize());
+	        }
+	    }
+    </script>
+</body>
+</html>

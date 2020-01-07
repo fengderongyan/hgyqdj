@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('新增试卷')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-add" name="form-add">
+	        <div class="form-group">	
+	            <label class="col-sm-3 control-label">标题：</label>
+	            <div class="col-sm-8">
+	                <input class="form-control" type="text" id="title" name="title" required/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-3 control-label">考试内容：</label>
+	            <div class="col-sm-8">
+	            	<textarea rows="2" cols="2" style="width: 100%" name="exam_content" required></textarea>
+	            </div>
+	        </div>
+	        <div class="form-group">
+				<label class="col-sm-3 control-label">题数：</label>
+				<div class="form-control-static" ><span style="padding-left: 10px;">25</span></div>
+				<input type="hidden" name="qst_cnt" value="25"/>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">总分：</label>
+				<div class="form-control-static"><span style="padding-left: 10px;">100分</span></div>
+				<input type="hidden" name="total_score" value="100"/>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">及格分：</label>
+				<div class="col-sm-8">
+				   <input class="form-control" type="text" name="pass_score" required/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">考试时长：</label>
+				<div class="col-sm-8">
+				   <input class="form-control" type="text"  name="total_time" required/>
+				   <span class="help-block m-b-none">单位：分钟</span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">涉及章节：</label>
+				<div class="col-sm-8" th:with="type=${@dict.getType('t_question_type')}">
+					<label th:each="dict:${type}" class="check-box">
+						<input name="qst_type" type="checkbox" th:value="${dict.dictValue}" th:text="${dict.dictLabel}" required>
+				 	</label>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">开始时间：</label>
+				<div class="col-sm-8">
+					<div class="input-group date">
+	                    <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+	                    <input name="begin_date" class="form-control" autocomplete="off" 
+	                    	onfocus="WdatePicker();" readonly="readonly" type="text" required>
+	                </div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-3 control-label">结束时间：</label>
+				<div class="col-sm-8">
+				   <div class="input-group date">
+	                    <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+	                    <input name="end_date" class="form-control" autocomplete="off"
+	                    	onfocus="WdatePicker();" readonly="readonly" type="text" required>
+	                </div>
+				</div>
+			</div>
+			<input type="hidden" name="danxuan_cnt" value="15"/>
+			<input type="hidden" name="danxuan_score" value="4"/>
+			<input type="hidden" name="duoxuan_cnt" value="5"/>
+			<input type="hidden" name="duoxuan_score" value="4"/>
+			<input type="hidden" name="panduan_cnt" value="5"/>
+			<input type="hidden" name="panduan_score" value="4"/>
+	    </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script type="text/javascript">
+	    $("#form-add").validate({
+	    	onkeyup: false,
+	        focusCleanup: true,
+	        rules:{
+	        	pass_score:{
+	        		digits:true
+	        	},
+	        	total_time:{
+	        		digits:true
+	        	},
+	        }
+	    });
+	    function submitHandler() {
+	        if ($.validate.form()) {
+	        	var data = $("#form-add").serializeArray();
+	        	var qstTypes = $.form.selectCheckeds("qst_type"); 
+	        	data.push({"name": "qstTypes", "value": qstTypes});
+	            $.operate.save(ctx + "questionmanage/exam/addSave", data);
+	        }
+	    }
+    </script>
+</body>
+</html>

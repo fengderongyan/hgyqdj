@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.mobile.app.mapper.MobileExamMapper">
+   <select id="getExamList" resultType="pd">
+   		select a.id exam_id,
+   			   a.title, 
+			   a.total_score,
+			   a.total_time,
+			   a.pass_score,
+		       case when ifnull(b.my_score, '') = '' then 0 else 1 end is_done, 
+	           ifnull(b.my_score, '') my_score
+	      from t_exam_info a left join (select * from t_my_exam where record_id = #{record_id}) b 
+	        on a.id = b.exam_id
+		 where a.status = 1
+		   and DATE_FORMAT(begin_date, '%Y-%m-%d') &lt;= DATE_FORMAT(sysdate(), '%Y-%m-%d')
+		   and DATE_FORMAT(end_date, '%Y-%m-%d') &gt;= DATE_FORMAT(sysdate(), '%Y-%m-%d')
+		 order by a.record_date desc
+   </select>
+   
+   <select id="getExamInfo" parameterType="pd" resultType="pd">
+   		select a.id exam_id,
+   			   a.title, 
+			   a.total_score,
+			   a.total_time,
+			   a.pass_score,
+			   DATE_FORMAT(begin_date, '%Y-%m-%d %H:%i:%s') begin_date,
+			   DATE_FORMAT(end_date, '%Y-%m-%d %H:%i:%s') end_date,
+			   a.exam_content,
+			   case when ifnull(b.my_score, '') = '' then 0 else 1 end is_done, 
+	           ifnull(b.my_score, '') my_score,
+	           ifnull(b.my_time, '') my_time,
+	           (select count(1) from t_my_exam where exam_id = #{exam_id}) finish_cnt
+	      from t_exam_info a left join (select * from t_my_exam where record_id = #{record_id}) b 
+	        on a.id = b.exam_id
+		 where a.id = #{exam_id}
+   </select>
+   
+   <select id="getExamIsdone" parameterType="pd" resultType="int">
+   		select count(1) from t_my_exam where exam_id = #{exam_id} and record_id = #{record_id}
+   </select>
+   <select id="getExamQuestion" parameterType="pd" resultType="pd">
+   		  select a.exam_id,
+   		  		 a.qst_id,
+			     a.score,
+				 a.show_order,
+				 b.qst_type,
+			 	 case b.qst_type when 1 then '单选' when 2 then '多选' when 3 then '判断' end qst_type_name,
+				 b.qst_content,
+				 b.answer 
+			  from t_exam_question a, 
+					    t_question b
+			 where a.qst_id = b.id
+			   and a.exam_id = #{exam_id}
+			  order by a.show_order
+   </select>
+   
+   <select id="getQuestionOptionList" parameterType="pd" resultType="pd">
+   		SELECT
+			b.qst_id,
+			concat(case b.show_order when 1 then 'A.' when 2 then 'B.' when 3 then 'C.' when 4 then 'D.' when 5 then 'E.'
+				when 6 then 'F.' when 7 then 'G.' when 8 then 'H.' when 8 then 'I.' end, b.opt_content) opt_content
+		FROM
+			t_exam_question a,
+			t_question_option b
+		WHERE
+			a.qst_id = b.qst_id
+		AND exam_id = #{exam_id}
+		ORDER BY
+			b.qst_id,
+			b.show_order
+   </select>
+   
+   <insert id="insertMyAnswer" parameterType="pd" >
+   		insert into t_my_exam_answer
+   		  (exam_id, qst_id, answer, my_answer, my_score, record_id, record_date)
+   		 values
+   		  (#{exam_id},#{qst_id},#{answer},#{my_answer},#{my_score},#{record_id},sysdate())
+   </insert>
+   <insert id="insertMyExam" parameterType="pd">
+   		insert into t_my_exam
+   		  (exam_id, my_score, my_time, is_pass, record_id, record_date)
+		 select #{exam_id}, #{my_score}, #{my_time}, case when pass_score &lt;= #{my_score} then 1 else 0 end, #{record_id}, sysdate()
+		  from t_exam_info where id = #{exam_id}  		  
+   </insert>
+   <delete id="deleteMyExamAnswer" parameterType="pd">
+   		delete from t_my_exam_answer where record_id = #{record_id} and exam_id = #{exam_id}
+   </delete>
+</mapper>

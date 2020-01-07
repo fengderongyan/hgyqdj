@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.questionmanage.mapper.QuestionManageMapper">
+	
+	<select id="getQuestionList" parameterType="pd" resultType="pd">
+		select a.id, a.type, b.dict_label type_name, case a.qst_type when 1 then '单选' when 2 then '多选' when 3 then '判断' end qst_type_name, 
+			   a.status, a.qst_content, a.answer, a.record_id, a.record_date
+		  from t_question a, sys_dict_data b
+		 where a.status = 1
+		   and a.type = b.dict_value
+		   and b.dict_type = 't_question_type'
+		   and b.status = 0
+		 <if test="type != null and type != ''">
+		 	and a.type = #{type}
+		 </if>
+		 <if test="qst_type != null and qst_type != ''">
+		 	and a.qst_type = #{qst_type}
+		 </if>
+		 <if test="qst_content != null and qst_content != ''">
+		 	and a.qst_content like concat('%',#{qst_content},'%')
+		 </if>
+		 order by record_date desc
+	</select>
+	
+    
+    <select id="isHasType" parameterType="string" resultType="int">
+    	select count(1) from sys_dict_data where dict_type = 't_question_type' and dict_value = #{type}
+    </select>
+    
+	<insert id="insertQuestion" parameterType="Question" useGeneratedKeys="true" keyProperty="qstId">
+		insert into t_question 
+			(type, qst_type, status, qst_content, answer, record_id, record_date)
+		 values
+		 	(#{type}, #{qstType}, #{status}, #{qstContent}, #{answer}, #{recordId}, #{recordDate})
+	</insert>
+	
+	<insert id="insertQuestionOpt" parameterType="pd">
+		insert into t_question_option
+			(qst_id, opt_content, show_order, record_id, record_date)
+		 values
+		 <foreach collection="optionList" item="item" separator=",">
+		 	(#{item.qstId}, #{item.optContent}, #{item.showOrder}, #{item.recordId}, #{item.recordDate})
+		 </foreach>
+	</insert>
+	
+	<insert id="addQuestion" parameterType="pd" useGeneratedKeys="true" keyProperty="pdid">
+		insert into t_question 
+			(type, qst_type, status, qst_content, answer, record_id, record_date)
+		 values
+		 	(#{type}, #{qst_type}, #{status}, #{qst_content}, #{answer}, #{record_id}, sysdate())
+	</insert>
+	<insert id="addQuestionOption" parameterType="pd">
+		insert into t_question_option
+			(qst_id, opt_content, show_order, record_id, record_date)
+		 values
+		 <foreach collection="optList" item="item" separator=",">
+		 	(#{item.qst_id}, #{item.opt_content}, #{item.show_order}, #{item.record_id}, sysdate())
+		 </foreach>
+	</insert>
+	
+	<select id="getQuestionInfo" parameterType="string" resultType="pd">
+		select 
+			a.id,
+			a.type,
+			a.qst_content,
+			a.qst_type,
+			a.answer,
+			max(case when b.show_order = 1 then b.opt_content end) optionA, 
+			max(case when b.show_order = 2 then b.opt_content end) optionB, 
+			max(case when b.show_order = 3 then b.opt_content end) optionC,
+			max(case when b.show_order = 4 then b.opt_content end) optionD,
+			max(case when b.show_order = 5 then b.opt_content end) optionE,
+			max(case when b.show_order = 6 then b.opt_content end) optionF,
+			max(case when b.show_order = 7 then b.opt_content end) optionG,
+			max(case when b.show_order = 8 then b.opt_content end) optionH,
+			max(case when b.show_order = 9 then b.opt_content end) optionI
+	   from t_question a, t_question_option b 
+	  where a.id = b.qst_id
+	    and a.id = #{id}
+	  group by a.id 
+	</select>
+	
+	<update id="editQuestion" parameterType="pd">
+		update t_question 
+		   set type = #{type},
+		   	   qst_type = #{qst_type},
+		   	   qst_content = #{qst_content},
+		   	   answer = #{answer},
+		   	   record_id = #{record_id},
+		   	   record_date = sysdate()
+		where id = #{id}
+	</update>
+	<delete id="deleteQuestionOpt" parameterType="pd">
+		delete from t_question_option where qst_id = #{id}
+	</delete>
+	
+	<update id="removeByIds" parameterType="String">
+		update t_question set status = 0
+		 where id in
+		 <foreach item="id" collection="array" open="(" separator="," close=")">
+		 	#{id}
+		 </foreach>
+	</update>
+</mapper>

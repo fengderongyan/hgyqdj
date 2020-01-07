@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('新增')" />
+	<th:block th:include="include :: summernote-css" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-add" name="form-add">
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">标题：</label>
+	            <div class="col-sm-10">
+		        	<input class="form-control" type="text" name="title" required/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">来源：</label>
+	            <div class="col-sm-10">
+	            	<input class="form-control" type="text" name="source" required/>
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">封面上传：</label>
+	            <div class="col-sm-10">
+		        	<input name="title_img_url" id="title_img_url" class="form-control" type="hidden" >
+	                <button type="button" class="btn btn-primary" id="imgBtn">上传封面</button>
+	                <img id="img" height="70px">
+	            </div>
+	        </div>
+	        <div class="form-group">	
+	            <label class="col-sm-2 control-label">资讯内容：</label>
+	            <div class="col-sm-10">
+		        	<input id="detail" name="detail" type="hidden">
+					<div class="summernote"></div>
+	            </div>
+	        </div>
+    	</form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: layui-js-css" />
+    <th:block th:include="include :: summernote-js" />
+    <script type="text/javascript">
+	    $("#form-add").validate({
+	    	onkeyup: false,
+	        focusCleanup: true
+	    });
+	    $('.summernote').summernote({
+	    	placeholder: '请输入资讯内容',
+			height : 192,
+			lang : 'zh-CN',
+			followingToolbar: false,
+			callbacks: {
+                onImageUpload: function (files) {
+                    sendFile(files[0], this);
+                }
+            }
+		});
+		function sendFile(file, obj) {
+	        var data = new FormData();
+	        data.append("file", file);
+	        $.ajax({
+	            type: "POST",
+	            url: ctx + "common/upload",
+	            data: data,
+	            cache: false,
+	            contentType: false,
+	            processData: false,
+	            dataType: 'json',
+	            success: function(result) {
+	                if (result.code == web_status.SUCCESS) {
+	                	$(obj).summernote('editor.insertImage', result.url, result.fileName);
+					} else {
+						$.modal.alertError(result.msg);
+					}
+	            },
+	            error: function(error) {
+	                $.modal.alertWarning("图片上传失败。");
+	            }
+	        });
+	    }
+	    
+	    layui.use('upload', function(){
+        	var upload = layui.upload;
+        	upload.render({
+			    elem: '#imgBtn'
+			    ,url: ctx + "common/upload"
+			    ,size: 10000
+			    ,accept: 'images'
+			    ,acceptMime:'image/*'
+			    ,before: function(){$.modal.loading("上传中")}
+			    ,done: function(res){
+			      if(res.code == 0){//如果上传成功
+			        $.modal.closeLoading();
+			    	$('#img').attr('src', res.url);
+			      	$('#title_img_url').val(res.url);
+			      }else{ //如果上传失败
+			      	$.modal.closeLoading();
+			      	$.modal.alertWarning("图片上传失败。");
+			      }
+			    }
+			    ,error:function(){
+			    	$.modal.closeLoading();
+			    	$.modal.alertWarning("图片上传失败。");
+			    }
+			});
+        });
+	    
+	    function submitHandler() {
+	        if ($.validate.form()) {
+	        	var sHTML = $('.summernote').summernote('code');
+	        	if($.common.isEmpty(sHTML)){
+	        		alert('请填写资讯内容');
+					return false;
+	        	}
+				$("#detail").val(sHTML);
+				var title_img_url = $('#title_img_url').val();
+				if($.common.isEmpty(title_img_url)){
+					alert('请上传封面');
+					return false;
+				}
+				if($.common.isEmpty(sHTML)){
+	        		alert('请填写资讯内容');
+					return false;
+	        	}
+	            $.operate.save(ctx + "bannermanage/addSave", $('#form-add').serialize());
+	        }
+	    }
+    </script>
+</body>
+</html>

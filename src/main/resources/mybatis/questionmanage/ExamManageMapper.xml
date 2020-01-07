@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.questionmanage.mapper.ExamManageMapper">
+	
+	<select id="getExamList" parameterType="pd" resultType="pd">
+		select id, title, exam_content, qst_cnt, total_score,pass_score,total_time,
+			   concat(DATE_FORMAT(begin_date, '%Y-%m-%d'), ' ~ ', DATE_FORMAT(end_date, '%Y-%m-%d')) begin_end_date
+		  from t_exam_info a
+		 where status = 1
+		 <if test="title != null and title != ''">
+		 	and a.title like concat('%',#{title},'%')
+		 </if>
+		 <if test="exam_content != null and exam_content != ''">
+		 	and a.exam_content like concat('%',#{exam_content},'%')
+		 </if>
+		 order by record_date desc
+	</select>
+	
+	<select id="getExamInfo" parameterType="string" resultType="pd">
+		 select id, 
+				title, 
+				exam_content, 
+				qst_cnt, 
+				total_score,
+				pass_score,
+				total_time,
+				qst_type,
+				DATE_FORMAT(begin_date, '%Y-%m-%d') begin_date,
+				DATE_FORMAT(end_date, '%Y-%m-%d') end_date
+	     from t_exam_info a
+	    where a.id = #{id}
+	</select>
+	
+	<insert id="addSave" parameterType="pd" useGeneratedKeys="true" keyProperty="pdid">
+		insert into t_exam_info
+		   (title, 
+		   exam_content, 
+		   qst_cnt, 
+		   total_score, 
+		   pass_score, 
+		   status, 
+		   total_time,
+		   qst_type, 
+		   danxuan_cnt,
+		   danxuan_score,
+		   duoxuan_cnt,
+		   duoxuan_score,
+		   panduan_cnt,
+		   panduan_score,
+		   begin_date, 
+		   end_date, 
+		   record_id, 
+		   record_date)
+		values
+		  (#{title}, 
+		   #{exam_content}, 
+		   #{qst_cnt}, 
+		   #{total_score}, 
+		   #{pass_score}, 
+		   #{status}, 
+		   #{total_time},
+		   #{qstTypes}, 
+		   #{danxuan_cnt},
+		   #{danxuan_score},
+		   #{duoxuan_cnt},
+		   #{duoxuan_score},
+		   #{panduan_cnt},
+		   #{panduan_score},
+		   STR_TO_DATE(#{begin_date}, '%Y-%m-%d %H:%i:%s'), 
+		   STR_TO_DATE(#{end_date}, '%Y-%m-%d %H:%i:%s'), 
+		   #{record_id}, 
+		   sysdate())
+	</insert>
+	
+	<update id="removeByIds" parameterType="String">
+		update t_exam_info set status = 0
+		 where id in
+		 <foreach item="id" collection="array" open="(" separator="," close=")">
+		 	#{id}
+		 </foreach>
+	</update>
+	
+	<select id="getDanxuanList" parameterType="pd" resultType="pd">
+		select id qst_id, #{danxuan_score} score
+	      from t_question a
+		 where qst_type = 1 
+		   and type in
+		 <foreach collection="qstTypeArr" item="type" open="(" separator="," close=")">
+		 	#{type}
+		 </foreach> 
+	</select>
+	
+	<select id="getDuoxuanList" parameterType="pd" resultType="pd">
+		select id qst_id, #{duoxuan_score} score
+	      from t_question a
+		 where qst_type = 2 
+		   and type in
+		 <foreach collection="qstTypeArr" item="type" open="(" separator="," close=")">
+		 	#{type}
+		 </foreach> 
+	</select>
+	
+	<select id="getPanduanList" parameterType="pd" resultType="pd">
+		select id qst_id, #{panduan_score} score
+	      from t_question a
+		 where qst_type = 3 
+		   and type in
+		 <foreach collection="qstTypeArr" item="type" open="(" separator="," close=")">
+		 	#{type}
+		 </foreach> 
+	</select>
+	
+	<insert id="addExamQuestion" parameterType="pd">
+		insert into t_exam_question (exam_id, qst_id, score, show_order)
+		  values
+		<foreach collection="questionList" item="question" index="idx" separator=",">
+			(#{pdid}, #{question.qst_id}, #{question.score}, #{idx} + 1)
+		</foreach>
+	</insert>
+</mapper>

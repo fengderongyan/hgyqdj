@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<th:block th:include="include :: header('选择接收人')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+		<div class="row">
+			<div class="col-sm-12 select-table table-striped">
+				<table id="bootstrap-table" data-mobile-responsive="true"></table>
+			</div>
+		</div>
+	</div>
+    <div th:include="include :: footer"></div>
+    <script th:inline="javascript">
+        var datas = [[${@dict.getType('sys_normal_disable')}]];
+		var userNameSelects = [], loginNameSelects = [];
+        $(function() {
+            var options = {
+                url: ctx + "noticeuser/getUserSelectList",
+		        showSearch: false,
+		        showRefresh: false,
+		        showToggle: false,
+		        showColumns: false,
+		        rememberSelected:true,
+                columns: [{
+		            checkbox: true
+		        },
+		        {
+					field : 'login_name', 
+					title : '登录名',
+					visible:false
+					
+				},
+				{
+					field : 'user_name', 
+					title : '昵称'
+				},
+				{
+					field : 'phonenumber', 
+					title : '电话号码'
+				},
+				{
+					field : 'dept_name', 
+					title : '所属组织'
+				}]
+            };
+            $.table.init(options);
+            
+            var userName, loginName;
+			$.btTable.on("check.bs.table check-all.bs.table uncheck.bs.table uncheck-all.bs.table", function (e, rows) {
+           		// 复选框分页保留保存选中数组
+            	if ($.isArray(rows)) {
+            	    loginName = $.map(rows, function(row) {
+            	        return row['login_name'];
+            	    });
+            	    userName = $.map(rows, function(row) {
+            	        return row['user_name'];
+            	    });
+            	} else {
+            	    loginName = [rows['login_name']];
+            	    userName = [rows['user_name']];
+            	}
+           		func = $.inArray(e.type, ['check', 'check-all']) > -1 ? 'union' : 'difference';
+         		loginNameSelects =  _[func](loginNameSelects, loginName);
+         		userNameSelects =   _[func](userNameSelects, userName);
+           	});
+        });
+         
+        /* 添加用户-选择用户-提交 */
+		function submitHandler(index, layero) {
+
+			$.modal.close();
+			// 父页面的方法
+			// parent.selectUsers();
+			// 父页面的变量
+			parent.$('#userNames').val(userNameSelects.join());
+			parent.$('#loginNames').val(loginNameSelects.join());
+		}
+    </script>
+</body>
+</html>

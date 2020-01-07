@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.mobile.app.mapper.MobileBaseInfoMapper">
+
+	<select id="getMyForumCnt" parameterType="pd" resultType="String">
+		select count(1) cnt from t_forum_info where record_id = #{record_id}
+	</select>
+	<select id="getMyCollectCnt" parameterType="pd" resultType="String">
+		select count(1) cnt from t_my_forum_collection where record_id = #{record_id}
+	</select>
+	<select id="getMyWishCnt" parameterType="pd" resultType="String">
+		select count(1) cnt from t_wish where claim_id = #{record_id} and status > 0
+	</select>
+	<select id="getExamCnt" parameterType="pd" resultType="pd">
+		select count(1) exam_cnt from t_my_exam where record_id = #{record_id}
+	</select>
+	
+	<select id="getMyExamList" parameterType="pd" resultType="pd">
+		select a.id exam_id,
+   			   a.title, 
+			   a.total_score,
+			   a.total_time,
+			   a.pass_score,
+		       case when ifnull(b.my_score, '') = '' then 0 else 1 end is_done, 
+	           ifnull(b.my_score, '') my_score
+	      from t_exam_info a, t_my_exam b
+		 where a.id = b.exam_id
+		   and b.record_id = #{record_id}
+		 order by b.record_date desc 
+	</select>
+	
+	<select id="getPointRank" parameterType="pd" resultType="pd">
+		select concat(@curRank := @curRank + 1, '') AS rank, t.*
+		 from (SELECT @curRank := 0) tmp,
+			(SELECT
+				a.total_point,
+				b.user_name,
+				b.avatar
+			FROM
+				t_my_point a,
+				sys_user b
+			WHERE
+				a.login_name = b.login_name
+			AND b. STATUS = 0
+			ORDER BY
+				a.total_point DESC,
+				a.update_date) t
+	</select>
+	
+	<select id="getMyPoint" parameterType="pd" resultType="pd">
+		select concat(rank, '') rank, total_point, user_name, avatar 
+		  from (select concat(@curRank := @curRank + 1, '') AS rank, t.*
+				 from (SELECT @curRank := 0) tmp,
+					(SELECT
+						a.total_point,
+						b.user_name,
+						b.avatar,
+						a.login_name
+					FROM
+						t_my_point a,
+						sys_user b
+					WHERE
+						a.login_name = b.login_name
+					AND b. STATUS = 0
+					ORDER BY
+						a.total_point DESC,
+						a.update_date) t) tt
+				 where tt.login_name = #{login_name}
+	</select>
+	
+	<select id="getRankRule" resultType="pd">
+		select rankrule from t_rank_rule where rrid = 1
+	</select>
+	
+	<select id="getUserInfo" parameterType="pd" resultType="pd">
+		select password, salt from sys_user where login_name = #{login_name}
+	</select>
+	
+	<update id="editPassword" parameterType="pd">
+		update sys_user set password = #{newPassword} where login_name = #{login_name}
+	</update>
+	<select id="getIsNoticeRead" parameterType="pd" resultType="int">
+		select case when count(1) > 0 then 1 else 0 end is_read 
+		  from t_noticeuser_info 
+		 where status = 1
+		   and flag_read = 0
+		   and user_id = #{user_id}
+	</select>
+	
+	<select id="getMyNoticeList" parameterType="pd" resultType="pd">
+		select id mynotice_id, title, detail, DATE_FORMAT(record_date,'%Y-%m-%d') record_date
+		  from t_noticeuser_info 
+		 where status = 1
+		   and user_id = #{user_id}
+		  order by record_date desc
+	</select>
+	
+	<update id="updateMyNticeRead" parameterType="pd">
+		update t_noticeuser_info set flag_read = 1 where flag_read = 0 and status = 1 and user_id = #{user_id}
+	</update>
+	<select id="getMyNoticeInfo" parameterType="pd" resultType="pd">
+		select title, detail, DATE_FORMAT(record_date,'%Y-%m-%d %H:%i:%s') record_date
+		  from t_noticeuser_info 
+		 where status = 1
+		   and id = #{mynotice_id}
+	</select>
+	
+	<select id="getAboutUs" parameterType="pd" resultType="pd">
+		select detail from t_about_us where id = 1
+	</select>
+	
+	<select id="getMyForumList" parameterType="pd" resultType="pd">
+		select 
+		 a.id forum_id, a.title, a.read_cnt, DATE_FORMAT(a.record_date,'%Y-%m-%d') record_date,
+		 (select count(1) from t_forum_reply t where a.id = t.forum_id) reply_cnt
+		 from t_forum_info a
+		where a.record_id = #{record_id}
+		order by a.record_date desc
+	</select>
+	<delete id="deleteForum" parameterType="pd">
+		delete from t_forum_info where id = #{forum_id};
+		delete from t_forum_img where forum_id = #{forum_id};
+		delete from t_forum_reply where forum_id = #{forum_id}
+	</delete>
+	<select id="getMyCollectionList" parameterType="pd" resultType="pd">
+		select 
+		 a.id forum_id, a.title, a.read_cnt, DATE_FORMAT(a.record_date,'%Y-%m-%d') record_date,
+		 (select count(1) from t_forum_reply t where a.id = t.forum_id) reply_cnt
+		 from t_forum_info a, t_my_forum_collection b
+		where a.id = b.forum_id
+		  and b.record_id = #{record_id}
+		order by b.record_date desc
+	</select>
+	<select id="getMyReplyList" parameterType="pd" resultType="pd">
+		select 
+			 c.title,
+			 a.id reply_id, a.forum_id, a.reply_content, DATE_FORMAT(a.record_date,'%Y-%m-%d') record_date,
+			 b.user_name,
+			 b.avatar,
+			 (select t.role_name from sys_role t where t.role_id = (select min(role_id) from sys_user_role c where c.user_id = b.user_id)) role_name,
+			 (select t.title from t_forum_info t where a.forum_id = t.id) forum_title
+			 from t_forum_reply a, sys_user b, t_forum_info c
+			where a.record_id = b.login_name
+	      and c.id = a.forum_id
+			  and c.record_id = #{record_id}
+	   order by a.record_date desc
+	</select>
+	
+	<update id="mobileLogout" parameterType="string">
+		update sys_user set registration_id = null
+		 where login_name = #{login_name}
+	</update>
+</mapper>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.mobile.app.mapper.MobileLoginMapper">
+    
+    <update id="updateTokenAndResId" parameterType="pd">
+    	update sys_user a 
+		   set a.registration_id = null 
+		where a.registration_id = #{registrationId};
+		update sys_user a 
+			set a.token = #{token},
+				a.registration_id = #{registrationId}
+			where a.login_name = #{loginName}
+    </update>
+    <select id="phoneIsExist" parameterType="pd" resultType="Integer">
+    	select case when count(1) > 0 then 1 else 0 end from
+    	  (
+	    	select phonenumber from sys_user where phonenumber = #{phonenumber}
+	    	union
+	    	select phonenumber from t_sign_up where status in(0, 1) and phonenumber = #{phonenumber}
+    	  ) t
+    </select>
+    <insert id="addSignUpInfo" parameterType="pd" useGeneratedKeys="true" keyProperty="pdid">
+    	insert into t_sign_up
+    	  (dept_id, user_name, phonenumber, password, sex, status, salt, record_date)
+    	 values
+    	   (#{dept_id}, #{user_name}, #{phonenumber}, #{password}, #{sex}, 0, #{salt}, sysdate())
+    </insert>
+    <insert id="insertSysUser" parameterType="pd" useGeneratedKeys="true" keyProperty="pdid">
+    	insert into sys_user 
+    	   (dept_id, user_name, phonenumber, salt, sex, deal_flag, create_time)
+    	 values
+    	 	(#{dept_id}, #{user_name}, #{phonenumber}, #{salt}, #{sex}, 0, sysdate())
+    </insert>
+    <update id="finishInsertUser" parameterType="pd">
+    	update sys_user set password = #{password}, login_name = #{pdid}, create_by = #{pdid}
+    	 where user_id = #{pdid}
+    </update>
+    <update id="updateSignStatus" parameterType="pd">
+    	update t_sign_up set status = #{status} where id = #{pdid}
+    </update>
+    <select id="getPrivacyProtocol" resultType="pd">
+    	select content from t_privacy_protocol where id = 1
+    </select>
+</mapper>

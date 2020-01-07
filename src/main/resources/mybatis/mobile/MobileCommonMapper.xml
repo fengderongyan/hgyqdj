@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.mobile.app.mapper.MobileCommonMapper">
+    
+    <select id="getDeptList" resultType="pd">
+    	select dept_id deptId, dept_name deptName from sys_dept where dept_id != 100 and status = 0 and del_flag = 0 order by order_num, dept_id
+    </select>
+    
+    <update id="finishBaseUserInfo" parameterType="pd">
+    	update sys_user 
+    	   set
+    	   <if test="avatar != null and avatar != ''">
+    	   		avatar = #{avatar},
+    	   </if>
+    	   user_name = #{userName},
+    	   nation = #{nation},
+    	   sex = #{sex},
+    	   birthday = STR_TO_DATE(#{birthday}, '%Y-%m-%d %H:%i:%s'),
+    	   idcard_num = #{idcardNum},
+    	   member_type = #{memberType},
+    	   dept_id = #{deptId},
+    	   phonenumber = #{phonenumber},
+    	   home_address = #{homeAddress}
+    	 where login_name = #{loginName}
+    </update>
+    
+    <select id="getUserCntByMobile" parameterType="pd" resultType="int">
+    	select count(1) from sys_user where phonenumber = #{phonenumber} and login_name != #{loginName}
+    </select>
+    
+    <select id="getInfoClassList" resultType="pd">
+    	select class_id, class_name, is_has_item from t_information_class a order by show_order 
+    </select>
+    <select id="getInfoItemList" parameterType="pd" resultType="pd">
+    	select item_id, item_name, info_type from t_information_item where class_id = #{class_id} order by show_order
+    </select>
+    
+    <select id="getBannerList" resultType="pd">
+    	select * from (select id banner_id, title, title_img_url from t_information_banner where status = 1 order by record_date desc) AA limit 3
+    </select>
+    
+    <select id="getNoticeList" resultType="pd">
+    	select id notice_id, title, DATE_FORMAT(record_date,'%Y-%m-%d') record_date, detail
+    	  from t_notice_info 
+    	 where status = 1 
+         order by record_date desc
+    </select>
+    
+    <select id="getRecInformationList" resultType="pd">
+    	select id info_id, title, title_img_url, source, DATE_FORMAT(record_date,'%Y-%m-%d') record_date from t_information
+    	 where status = 1 
+    	   and is_recommend = 1
+    	 order by record_date desc
+    </select>
+    
+    <select id="getBannerInfo" parameterType="pd" resultType="pd">
+    	select title, detail, source, DATE_FORMAT(record_date,'%Y-%m-%d') record_date 
+    	  from t_information_banner 
+    	 where status = 1 and id = #{banner_id}
+    </select>
+    
+    <select id="getNoticeInfo" parameterType="pd" resultType="pd">
+    	select title, detail, DATE_FORMAT(record_date,'%Y-%m-%d') record_date 
+    	  from t_notice_info
+    	 where status = 1 and id = #{notice_id}
+    </select>
+    
+    <select id="getInformationDetail" parameterType="pd" resultType="pd">
+    	select title, detail, source, DATE_FORMAT(record_date,'%Y-%m-%d') record_date, ifnull(video_url, '') video_url, video_time
+    	  from t_information
+    	 where status = 1 and id = #{info_id}
+    </select>
+    
+    <select id="getInfoListByClass" parameterType="pd" resultType="pd">
+    	select id info_id, title, title_img_url, ifnull(video_url, '') video_url,video_time, source, DATE_FORMAT(record_date,'%Y-%m-%d') record_date
+    	  from t_information
+    	 where status = 1
+    	   and class_id = #{class_id}
+    	 <if test="item_id != null and item_id != ''">
+    	 	and item_id = #{item_id}
+    	 </if>
+    	 order by record_date desc
+    </select>
+    
+    <select id="introduceDepts" resultType="pd">
+    	select a.dept_id, a.dept_name, a.leader, a.address, b.dict_label dept_type_name
+    	  from sys_dept a left join (select dict_value, dict_label from sys_dict_data where dict_type = 't_dept_type') b
+    	    on a.dept_type = b.dict_value
+    	 where status = 0 
+    	   and del_flag = 0
+    	   and dept_id != 100
+    	   and dept_type in(1, 2)
+    	  order by order_num, dept_id
+    </select>
+    
+    <select id="introduceDeptDetail" parameterType="pd" resultType="pd">
+    	select a.dept_id, a.dept_name, a.leader, a.address, b.dict_label dept_type_name, a.phone, a.introduction
+    	  from sys_dept a left join (select dict_value, dict_label from sys_dict_data where dict_type = 't_dept_type') b
+    	    on a.dept_type = b.dict_value
+    	 where dept_id = #{dept_id}
+    </select>
+    
+    <select id="getUserListByDept" parameterType="pd" resultType="pd">
+    	select * from (select a.user_name, a.phonenumber, a.avatar, c.role_name 
+						  from sys_user a, 
+						       (select * from sys_user_role where role_id in(6,7)) b, 
+						       sys_role c
+							where a.user_id = b.user_id
+							and a.status = 0
+							and b.role_id = c.role_id
+							and a.dept_id = #{dept_id}
+						  order by b.role_id, a.user_id) AA limit 4
+    </select>
+    
+    <select id="getActivityList" parameterType="pd" resultType="pd">
+    	select title, title_img_url from t_dept_activity where status = 1 and dept_id = #{dept_id}  order by record_date limit 3
+    </select>
+    
+    <select id="getAllUserListByDept" parameterType="pd" resultType="pd">
+    	select a.user_name, a.phonenumber, a.avatar, c.role_name 
+		  from sys_user a, 
+		       (select * from sys_user_role where role_id in(6,7)) b, 
+		       sys_role c
+			where a.user_id = b.user_id
+			and a.status = 0
+			and b.role_id = c.role_id
+			and a.dept_id = #{dept_id}
+		  order by b.role_id, a.user_id
+    </select>
+    
+    <select id="getAllActivityList" parameterType="pd" resultType="pd">
+    	select id activity_id, title, title_img_url,DATE_FORMAT(record_date,'%Y-%m-%d') record_date 
+    	  from t_dept_activity 
+    	 where status = 1 
+    	   and dept_id = #{dept_id} 
+    	 order by record_date
+    </select>
+    
+    <select id="getActivityDetail" parameterType="pd" resultType="pd">
+    	select id activity_id, title, DATE_FORMAT(record_date,'%Y-%m-%d') record_date, detail from  t_dept_activity
+    	 where status = 1 and id = #{activity_id}
+    </select>
+    
+    <select id="introduceBusiness" resultType="pd">
+    	select a.dept_id, a.dept_name, a.leader, a.address, b.dict_label dept_type_name
+    	  from sys_dept a left join (select dict_value, dict_label from sys_dict_data where dict_type = 't_dept_type') b
+    	    on a.dept_type = b.dict_value
+    	 where status = 0 
+    	   and del_flag = 0
+    	   and dept_id != 100
+    	   and dept_type = 3
+    	  order by order_num, dept_id
+    </select>
+    <select id="hasPointInfo" parameterType="pd" resultType="int">
+    	select count(1) from t_my_point where login_name = #{login_name}
+    </select>
+    
+    <select id="pointIsFull" parameterType="pd" resultType="int">
+    	select sum(ifnull(point, 0)) from t_my_point_detail
+    	 where login_name = #{login_name}
+    	   and get_type = #{getType}
+    	   and DATE_FORMAT(record_date,'%Y-%m-%d') = DATE_FORMAT(sysdate(),'%Y-%m-%d')
+    </select>
+    <insert id="insertPointInfo" parameterType="pd">
+    	<!-- 积分插入明细表 -->
+    	insert into t_my_point_detail
+    	   (login_name, get_type, point, record_date)
+    	 values
+    	   (#{login_name}, #{getType}, #{point}, sysdate());
+    	<if test="has_point >= 1">
+	    	update t_my_point set total_point = total_point + #{point}, update_date = sysdate()
+	    	 where login_name = #{login_name}
+    	</if>
+    	<if test="has_point == 0">
+	    	insert into t_my_point
+	    		(login_name, total_point, update_date)
+	    	values
+	    		(#{login_name}, #{point}, sysdate())
+    	</if>
+    </insert>
+	<select id="updateApp" parameterType="pd" resultType="pd">
+		select version_num, is_force, content, update_url from t_app_update 
+		 where id = (select max(id) from t_app_update where system_flag = #{system_flag})
+	</select>
+	
+	<select id="getWishList" parameterType="pd" resultType="pd">
+		select id wish_id, 
+			   title, 
+			   title_img_url, 
+			   status, 
+			   case status when 1 then '进行中' when 2 then '已认领' when 3 then '已结束' end status_name,
+			   content
+	      from t_wish 
+	     where status = 1
+	      order by record_date desc
+	</select>
+	<select id="getWishInfo" parameterType="pd" resultType="pd">
+		select id wish_id, 
+			   title, 
+			   title_img_url, 
+			   status, 
+			   case status when 1 then '进行中' when 2 then '已认领' when 3 then '已结束' end status_name,
+			   content,
+			   lxr_name,
+			   lxr_phone
+	      from t_wish 
+	     where id = #{wish_id}
+	</select>
+	
+	<select id="getMyClaimList" parameterType="pd" resultType="pd">
+		select id wish_id, 
+			   title, 
+			   title_img_url, 
+			   status, 
+			   case status when 1 then '进行中' when 2 then '已认领' when 3 then '已结束' end status_name,
+			   content
+	      from t_wish 
+	     where status in (2, 3)
+	     <if test="claim_id != null and claim_id != ''">
+	     	and claim_id = #{claim_id}
+	     </if>
+	      order by record_date desc 
+	</select>
+	
+	<update id="claimWish" parameterType="pd">
+		update t_wish 
+		   set status = 2,
+		       claim_id = #{claim_id},
+		   	   claim_date = sysdate()
+		 where id = #{wish_id}
+	</update>
+	
+	<select id="getWishStatus" parameterType="pd" resultType="Integer">
+		select status from t_wish where id = #{wish_id}
+	</select>
+</mapper>
